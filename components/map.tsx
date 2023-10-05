@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Map() {
   const mapContainerRef = useRef(null);
-  const floorSelectorRef = useRef(null);
+//   const floorSelectorRef = useRef(null);
   const mapboxMapRef = useRef(null);
   const mapsIndoorsRef = useRef(null);
 
@@ -79,16 +79,15 @@ export default function Map() {
         scale: 1,
         visible: true,
       })
-      .setLngLat([
-         location.properties.anchor.coordinates[0],
-         location.properties.anchor.coordinates[1],
-       ])
-      .addTo(mapboxMap);
+        .setLngLat([
+          location.properties.anchor.coordinates[0],
+          location.properties.anchor.coordinates[1],
+        ])
+        .addTo(mapboxMap);
 
       toast(location.properties.name, {
         duration: 4000,
         className: "justify-center",
-        // position: "top-center",
       });
 
       await delay(4500);
@@ -110,21 +109,21 @@ export default function Map() {
     mapboxMapRef.current = mapboxMap;
 
     mapsIndoors.on("ready", () => {
-    mapsIndoors.setFloor("50");
+      mapsIndoors.setFloor("50");
     });
 
-    const floorSelector = floorSelectorRef.current;
+    // const floorSelector = floorSelectorRef.current;
 
-    new mapsindoors.FloorSelector(floorSelector, mapsIndoors);
-    mapboxMap.addControl(
-      {
-        onAdd: function () {
-          return floorSelector;
-        },
-        onRemove: function () {},
-      },
-      "top-left"
-    );
+    // new mapsindoors.FloorSelector(floorSelector, mapsIndoors);
+    // mapboxMap.addControl(
+    //   {
+    //     onAdd: function () {
+    //       return floorSelector;
+    //     },
+    //     onRemove: function () {},
+    //   },
+    //   "top-left"
+    // );
 
     const handleClick = (location) => {
       setLocationsList((prevLocations) => [...prevLocations, location]);
@@ -143,8 +142,7 @@ export default function Map() {
 
   return (
     <>
-      <Toaster position="bottom-center" visibleToasts={9} toastOptions={{
-      }} />
+      <Toaster position="bottom-center" visibleToasts={9} toastOptions={{}} />
       <Button
         className="absolute z-50 top-5 right-5"
         onClick={startTour}
@@ -153,7 +151,7 @@ export default function Map() {
         Start Tour!
       </Button>
       <div ref={mapContainerRef} className="min-h-screen" />
-      <div ref={floorSelectorRef} />
+      {/* <div ref={floorSelectorRef} /> */}
     </>
   );
 }
