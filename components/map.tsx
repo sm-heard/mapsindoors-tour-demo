@@ -70,9 +70,13 @@ export default function Map() {
       mapView: mapView,
     });
     mapsIndoorsRef.current = mapsIndoors;
-    const mapboxMap = mapView.getMap();
+    const mapboxMap = mapsIndoors.getMap();
     mapboxMapRef.current = mapboxMap;
 
+    mapsIndoors.on("ready", () => {
+    mapsIndoors.setFloor("50");
+    });
+    
     const floorSelector = floorSelectorRef.current;
 
     new mapsindoors.FloorSelector(floorSelector, mapsIndoors);
@@ -85,11 +89,6 @@ export default function Map() {
       },
       "top-left"
     );
-
-    mapsIndoors.setFloor("50");
-    mapsIndoors.setFloor("5");
-    mapsIndoors.setFloor(50);
-
 
     const handleClick = (location) => {
       setLocationsList((prevLocations) => [...prevLocations, location]);
