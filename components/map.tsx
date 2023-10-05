@@ -66,11 +66,12 @@ export default function Map() {
       });
 
       toast(location.properties.name, {
-        duration: 5000,
+        duration: 4000,
+        className: "justify-center",
         // position: "top-center",
       });
 
-      await delay(5500);
+      await delay(4500);
 
       mapsIndoors.revertDisplayRule(location.id);
     }
@@ -108,7 +109,7 @@ export default function Map() {
       setLocationsList((prevLocations) => [...prevLocations, location]);
       setIsButtonDisabled(false);
       toast.success(location.properties.name + " added to tour!", {
-        duration: 2000,
+        duration: 1000,
       });
     };
 
@@ -121,7 +122,8 @@ export default function Map() {
 
   return (
     <>
-      <Toaster position="bottom-center" visibleToasts={9} />
+      <Toaster position="bottom-center" visibleToasts={9} toastOptions={{
+      }} />
       <Button
         className="absolute z-50 top-5 right-5"
         onClick={startTour}
