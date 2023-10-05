@@ -63,7 +63,27 @@ export default function Map() {
       mapsIndoors.overrideDisplayRule(location.id, {
         wallsColor: "#FF0000",
         extrusionColor: "#FF0000",
+        polygonVisible: true,
+        polygonFillColor: "#FF0000",
+        polygonFillOpacity: 1,
+        polygonStrokeColor: "#FF0000",
+        polygonStrokeOpacity: 1,
       });
+
+      const marker = new mapboxgl.Marker({
+        color: "#FF0000",
+        anchor: "bottom",
+        offset: [0, -10],
+        pitchAlignment: "viewport",
+        rotationAlignment: "viewport",
+        scale: 1,
+        visible: true,
+      })
+      .setLngLat([
+         location.properties.anchor.coordinates[0],
+         location.properties.anchor.coordinates[1],
+       ])
+      .addTo(mapboxMap);
 
       toast(location.properties.name, {
         duration: 4000,
@@ -74,6 +94,7 @@ export default function Map() {
       await delay(4500);
 
       mapsIndoors.revertDisplayRule(location.id);
+      marker.remove();
     }
   };
 
