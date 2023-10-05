@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Map() {
   const mapContainerRef = useRef(null);
+  const floorSelectorRef = useRef(null);
   const mapboxMapRef = useRef(null);
   const mapsIndoorsRef = useRef(null);
 
@@ -72,7 +73,22 @@ export default function Map() {
     const mapboxMap = mapView.getMap();
     mapboxMapRef.current = mapboxMap;
 
+    const floorSelector = floorSelectorRef.current;
+
+    new mapsindoors.FloorSelector(floorSelector, mapsIndoors);
+    mapboxMap.addControl(
+      {
+        onAdd: function () {
+          return floorSelector;
+        },
+        onRemove: function () {},
+      },
+      "top-left"
+    );
+
     mapsIndoors.setFloor("50");
+    mapsIndoors.setFloor("5");
+
 
     const handleClick = (location) => {
       setLocationsList((prevLocations) => [...prevLocations, location]);
@@ -92,10 +108,15 @@ export default function Map() {
   return (
     <>
       <Toaster position="bottom-center" visibleToasts={9} />
-      <Button className="absolute z-50 top-5 right-5" onClick={startTour} disabled={isButtonDisabled}>
+      <Button
+        className="absolute z-50 top-5 right-5"
+        onClick={startTour}
+        disabled={isButtonDisabled}
+      >
         Start Tour!
       </Button>
       <div ref={mapContainerRef} className="min-h-screen" />
+      <div ref={floorSelectorRef} />
     </>
   );
 }
