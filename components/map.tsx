@@ -88,6 +88,7 @@ export default function Map() {
 
     mapsIndoors.setFloor("50");
     mapsIndoors.setFloor("5");
+    mapsIndoors.setFloor(50);
 
 
     const handleClick = (location) => {
