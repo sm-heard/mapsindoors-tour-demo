@@ -46,6 +46,8 @@ export default function Map() {
 
   const startTour = async () => {
     const mapboxMap = mapboxMapRef.current;
+    const mapsIndoors = mapsIndoorsRef.current;
+
     for (const location of locationsList) {
       mapboxMap.flyTo({
         center: [
@@ -58,7 +60,19 @@ export default function Map() {
         bearing: mapboxMap.getBearing() + 90,
       });
 
+      mapsIndoors.overrideDisplayRule(location.id, {
+        wallsColor: "#FF0000",
+        extrusionColor: "#FF0000",
+      });
+
+      toast(location.properties.name, {
+        duration: 5000,
+        position: "top-center",
+      });
+
       await delay(5500);
+
+      mapsIndoors.revertDisplayRule(location.id);
     }
   };
 
@@ -76,7 +90,7 @@ export default function Map() {
     mapsIndoors.on("ready", () => {
     mapsIndoors.setFloor("50");
     });
-    
+
     const floorSelector = floorSelectorRef.current;
 
     new mapsindoors.FloorSelector(floorSelector, mapsIndoors);
@@ -94,7 +108,7 @@ export default function Map() {
       setLocationsList((prevLocations) => [...prevLocations, location]);
       setIsButtonDisabled(false);
       toast.success(location.properties.name + " added to tour!", {
-        duration: 5000,
+        duration: 2000,
       });
     };
 
