@@ -67,7 +67,7 @@ export default function Map() {
 
       toast(location.properties.name, {
         duration: 5000,
-        position: "top-center",
+        // position: "top-center",
       });
 
       await delay(5500);
