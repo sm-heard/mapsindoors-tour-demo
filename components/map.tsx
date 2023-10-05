@@ -1,12 +1,17 @@
 "use client";
 
 import { use, useEffect, useRef, useState } from "react";
-import { Toaster, toast } from 'sonner';
-import { Button } from "@/components/ui/button"
+import { Toaster, toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export default function Map() {
   const mapContainerRef = useRef(null);
-  
+  const mapboxMapRef = useRef(null);
+  const mapsIndoorsRef = useRef(null);
+
+  const [locationsList, setLocationsList] = useState([]);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+
   const mapViewOptions = {
     accessToken:
       "pk.eyJ1Ijoic21oZWFyZCIsImEiOiJjbG5hdmxhd3kwNjY3MmxtbGNqY3p1NWhxIn0.jY5n8pAE6DMd7li9oSP8fA",
@@ -16,8 +21,8 @@ export default function Map() {
     zoom: 20,
     maxZoom: 24,
     minZoom: 19,
-    pitch: 45,
-    bearing: 49,
+    pitch: 25,
+    bearing: 59,
     // bounds: [
     //   [-97.72107723039518, 30.40456044442378],
     //   [-97.72103878321172, 30.405409581795666],
@@ -34,44 +39,63 @@ export default function Map() {
     // },
   };
 
-  let locationsList = [];
+  function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
+  const startTour = async () => {
+    const mapboxMap = mapboxMapRef.current;
+    for (const location of locationsList) {
+      mapboxMap.flyTo({
+        center: [
+          location.properties.anchor.coordinates[0],
+          location.properties.anchor.coordinates[1],
+        ],
+        zoom: 21,
+        duration: 3500,
+        pitch: 45,
+        bearing: mapboxMap.getBearing() + 90,
+      });
+
+      await delay(5500);
+    }
+  };
 
   useEffect(() => {
-
     mapViewOptions.element = mapContainerRef.current;
 
-    const mapView = new window.mapsindoors.mapView.MapboxView(mapViewOptions);
-    const mapsIndoors = new window.mapsindoors.MapsIndoors({
+    const mapView = new mapsindoors.mapView.MapboxView(mapViewOptions);
+    const mapsIndoors = new mapsindoors.MapsIndoors({
       mapView: mapView,
     });
-    const mapboxMap = mapsIndoors.getMap();
+    mapsIndoorsRef.current = mapsIndoors;
+    const mapboxMap = mapView.getMap();
+    mapboxMapRef.current = mapboxMap;
 
-    mapsIndoors.on("click", (location) => {
+    mapsIndoors.setFloor("50");
 
-        if (locationsList.indexOf(location) === -1) {
-          locationsList.push(location);
-          toast.success(location.properties.name + " added to tour!", {
-            duration: 5000,
-          });
-        } else {
-          toast.error(location.properties.name + " already in tour!", {
-            duration: 5000,
-          });
-        }
-        });
+    const handleClick = (location) => {
+      setLocationsList((prevLocations) => [...prevLocations, location]);
+      setIsButtonDisabled(false);
+      toast.success(location.properties.name + " added to tour!", {
+        duration: 5000,
+      });
+    };
 
-        console.log(locationsList);
+    mapsIndoors.on("click", handleClick);
 
+    return () => {
+      mapsIndoors.off("click", handleClick);
+    };
   }, []);
 
- 
-
-  return(
-  <>
-  <Toaster position="bottom-center" visibleToasts={9} />
-  <Button className="absolute z-50 top-5 right-5">Start Tour!</Button>
-  <div ref={mapContainerRef} className="min-h-screen" />
-  </>
+  return (
+    <>
+      <Toaster position="bottom-center" visibleToasts={9} />
+      <Button className="absolute z-50 top-5 right-5" onClick={startTour} disabled={isButtonDisabled}>
+        Start Tour!
+      </Button>
+      <div ref={mapContainerRef} className="min-h-screen" />
+    </>
   );
 }
