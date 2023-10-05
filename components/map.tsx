@@ -48,6 +48,8 @@ export default function Map() {
     const mapboxMap = mapboxMapRef.current;
     const mapsIndoors = mapsIndoorsRef.current;
 
+    setIsButtonDisabled(true);
+
     for (const location of locationsList) {
       mapboxMap.flyTo({
         center: [
@@ -95,6 +97,7 @@ export default function Map() {
       mapsIndoors.revertDisplayRule(location.id);
       marker.remove();
     }
+    setIsButtonDisabled(false);
   };
 
   useEffect(() => {
