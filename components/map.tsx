@@ -3,10 +3,13 @@
 import { use, useEffect, useRef, useState } from "react";
 import { Toaster, toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { MapPin } from "lucide-react";
+import { Drawer } from "vaul";
 
 export default function Map() {
   const mapContainerRef = useRef(null);
-//   const floorSelectorRef = useRef(null);
+  //   const floorSelectorRef = useRef(null);
   const mapboxMapRef = useRef(null);
   const mapsIndoorsRef = useRef(null);
 
@@ -146,6 +149,42 @@ export default function Map() {
   return (
     <>
       <Toaster position="bottom-center" visibleToasts={9} toastOptions={{}} />
+
+      <Drawer.Root>
+        <Drawer.Trigger asChild>
+          <Button
+            size="icon"
+            className="absolute z-50 top-5 left-5"
+            disabled={isButtonDisabled}
+          >
+            <MapPin />
+          </Button>
+        </Drawer.Trigger>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 bg-black/40" />
+          <Drawer.Content className="bg-zinc-100 flex flex-col rounded-t-[10px] mt-24 fixed bottom-0 left-0 right-0 z-50">
+            <div className="p-4 bg-white rounded-t-[10px] flex-1">
+              <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-zinc-300 mb-8" />
+              <div className="max-w-md mx-auto">
+                <Drawer.Title className="font-medium mb-4 text-center">
+                  Tour Locations
+                </Drawer.Title>
+
+                {/* make a list of locations */}
+                {locationsList.map((location, index) => (
+                  <span key={index} className="justify-between items-center">
+                    <Badge variant="secondary" className="m-1 drop-shadow-md">
+                      <MapPin className="mr-1" />
+                      {location.properties.name}
+                    </Badge>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
+
       <Button
         className="absolute z-50 top-5 right-5"
         onClick={startTour}
