@@ -28,6 +28,9 @@ export default function Map() {
   const zoomLevelMap = { far: 21, medium: 22, close: 23 };
   const [zoomLevel, setZoomLevel] = useState("far");
 
+  const highlightMap = { red: "#FF0000", blue: "#0000FF", green: "#00FF00" };
+  const [highlight, setHighlight] = useState("red");
+
   const mapViewOptions = {
     accessToken:
       "pk.eyJ1Ijoic21oZWFyZCIsImEiOiJjbG5hdmxhd3kwNjY3MmxtbGNqY3p1NWhxIn0.jY5n8pAE6DMd7li9oSP8fA",
@@ -79,17 +82,17 @@ export default function Map() {
       });
 
       mapsIndoors.overrideDisplayRule(location.id, {
-        wallsColor: "#FF0000",
-        extrusionColor: "#FF0000",
+        wallsColor: highlightMap[highlight],
+        extrusionColor: highlightMap[highlight],
         polygonVisible: true,
-        polygonFillColor: "#FF0000",
+        polygonFillColor: highlightMap[highlight],
         polygonFillOpacity: 1,
-        polygonStrokeColor: "#FF0000",
+        polygonStrokeColor: highlightMap[highlight],
         polygonStrokeOpacity: 1,
       });
 
       const marker = new mapboxgl.Marker({
-        color: "#FF0000",
+        color: highlightMap[highlight],
         anchor: "bottom",
         offset: [0, -10],
         pitchAlignment: "viewport",
@@ -213,15 +216,16 @@ export default function Map() {
                   Settings
                 </Drawer.Title>
 
+                <div className="flex gap-2 justify-around">
+                    <div className="flex flex-col gap-2">
                 <Label htmlFor="zoomLevel">Zoom To</Label>
-
                 <Select
                 value={zoomLevel}
                   onValueChange={(value) => {
                     setZoomLevel(value);
                   }}
                 >
-                  <SelectTrigger id="zoomLevel" className="w-[90px]">
+                  <SelectTrigger id="zoomLevel" className="w-[100px]">
                     <SelectValue placeholder="Zoom To" />
                   </SelectTrigger>
                   <SelectContent>
@@ -230,6 +234,28 @@ export default function Map() {
                     <SelectItem value="close">Close</SelectItem>
                   </SelectContent>
                 </Select>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                <Label htmlFor="highlight">Highlight</Label>
+                <Select
+                value={highlight}
+                  onValueChange={(value) => {
+                    setHighlight(value);
+                  }}
+                >
+                  <SelectTrigger id="highlight" className="w-[100px]">
+                    <SelectValue placeholder="Highlight" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="red">Red</SelectItem>
+                    <SelectItem value="green">Green</SelectItem>
+                    <SelectItem value="blue">Blue</SelectItem>
+                  </SelectContent>
+                </Select>
+                </div>
+                  </div>
+
               </div>
             </div>
           </Drawer.Content>
