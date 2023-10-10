@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin } from "lucide-react";
 import { Drawer } from "vaul";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Map() {
   const mapContainerRef = useRef(null);
@@ -15,6 +22,9 @@ export default function Map() {
 
   const [locationsList, setLocationsList] = useState([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+
+  const zoomLevelMap = { "far": 21, "medium": 22, "close": 23 };
+  const [zoomLevel, setZoomLevel] = useState("far");
 
   const mapViewOptions = {
     accessToken:
@@ -59,7 +69,7 @@ export default function Map() {
           location.properties.anchor.coordinates[0],
           location.properties.anchor.coordinates[1],
         ],
-        zoom: 21,
+        zoom: zoomLevelMap[zoomLevel],
         duration: 3500,
         pitch: 45,
         bearing: mapboxMap.getBearing() + 90,
@@ -184,6 +194,21 @@ export default function Map() {
           </Drawer.Content>
         </Drawer.Portal>
       </Drawer.Root>
+
+      <Select onValueChange={
+        (value) => {
+          setZoomLevel(value);   
+        }
+      }>
+        <SelectTrigger className="w-fit absolute z-50 top-5 right-32">
+          <SelectValue placeholder="Zoom To" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="far">Far</SelectItem>
+          <SelectItem value="medium">Medium</SelectItem>
+          <SelectItem value="close">Close</SelectItem>
+        </SelectContent>
+      </Select>
 
       <Button
         className="absolute z-50 top-5 right-5"
