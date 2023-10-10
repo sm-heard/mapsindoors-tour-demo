@@ -4,7 +4,7 @@ import { use, useEffect, useRef, useState } from "react";
 import { Toaster, toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin } from "lucide-react";
+import { MapPin, Settings } from "lucide-react";
 import { Drawer } from "vaul";
 import {
   Select,
@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 export default function Map() {
   const mapContainerRef = useRef(null);
@@ -22,8 +23,9 @@ export default function Map() {
 
   const [locationsList, setLocationsList] = useState([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [buttonDisabledAnimation, setButtonDisabledAnimation] = useState(false);
 
-  const zoomLevelMap = { "far": 21, "medium": 22, "close": 23 };
+  const zoomLevelMap = { far: 21, medium: 22, close: 23 };
   const [zoomLevel, setZoomLevel] = useState("far");
 
   const mapViewOptions = {
@@ -62,6 +64,7 @@ export default function Map() {
     const mapsIndoors = mapsIndoorsRef.current;
 
     setIsButtonDisabled(true);
+    setButtonDisabledAnimation(true);
 
     for (const location of locationsList) {
       mapboxMap.flyTo({
@@ -111,6 +114,7 @@ export default function Map() {
       marker.remove();
     }
     setIsButtonDisabled(false);
+    setButtonDisabledAnimation(false);
   };
 
   useEffect(() => {
@@ -179,8 +183,6 @@ export default function Map() {
                 <Drawer.Title className="font-medium mb-4 text-center">
                   Tour Locations
                 </Drawer.Title>
-
-                {/* make a list of locations */}
                 {locationsList.map((location, index) => (
                   <span key={index} className="justify-between items-center">
                     <Badge variant="secondary" className="m-1 drop-shadow-md">
@@ -195,11 +197,50 @@ export default function Map() {
         </Drawer.Portal>
       </Drawer.Root>
 
-      <Select onValueChange={
-        (value) => {
-          setZoomLevel(value);   
-        }
-      }>
+      <Drawer.Root>
+        <Drawer.Trigger asChild>
+          <Button size="icon" className="absolute z-50 top-5 right-32" disabled={buttonDisabledAnimation}>
+            <Settings />
+          </Button>
+        </Drawer.Trigger>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 bg-black/40" />
+          <Drawer.Content className="bg-zinc-100 flex flex-col rounded-t-[10px] mt-24 fixed bottom-0 left-0 right-0 z-50">
+            <div className="p-4 bg-white rounded-t-[10px] flex-1">
+              <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-zinc-300 mb-8" />
+              <div className="max-w-md mx-auto">
+                <Drawer.Title className="font-medium mb-4 text-center">
+                  Settings
+                </Drawer.Title>
+
+                <Label htmlFor="zoomLevel">Zoom To</Label>
+
+                <Select
+                value={zoomLevel}
+                  onValueChange={(value) => {
+                    setZoomLevel(value);
+                  }}
+                >
+                  <SelectTrigger id="zoomLevel" className="w-[90px]">
+                    <SelectValue placeholder="Zoom To" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="far">Far</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="close">Close</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
+
+      {/* <Select
+        onValueChange={(value) => {
+          setZoomLevel(value);
+        }}
+      >
         <SelectTrigger className="w-fit absolute z-50 top-5 right-32">
           <SelectValue placeholder="Zoom To" />
         </SelectTrigger>
@@ -208,7 +249,7 @@ export default function Map() {
           <SelectItem value="medium">Medium</SelectItem>
           <SelectItem value="close">Close</SelectItem>
         </SelectContent>
-      </Select>
+      </Select> */}
 
       <Button
         className="absolute z-50 top-5 right-5"
