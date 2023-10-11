@@ -14,16 +14,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 export default function Map() {
+  const mapsindoors = window.mapsindoors;
+  const mapboxgl = window.mapboxgl;
+
   const mapContainerRef = useRef(null);
   //   const floorSelectorRef = useRef(null);
   const mapboxMapRef = useRef(null);
   const mapsIndoorsRef = useRef(null);
+  const directionsServiceRef = useRef(null);
+  const directionsRendererRef = useRef(null);
 
   const [locationsList, setLocationsList] = useState([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [buttonDisabledAnimation, setButtonDisabledAnimation] = useState(false);
+  const [withRoutes, setWithRoutes] = useState(false);
 
   const zoomLevelMap = { far: 21, medium: 22, close: 23 };
   const [zoomLevel, setZoomLevel] = useState("far");
@@ -46,16 +53,6 @@ export default function Map() {
     //   [-97.72107723039518, 30.40456044442378],
     //   [-97.72103878321172, 30.405409581795666],
     // ],
-    // fitBoundsOptions: {
-    //   bearing: 49,
-    //   zoom: 20,
-    //   pitch: 45,
-    //   duration: 3000,
-    //   linear: true,
-    //   easing: function (t) {
-    //     return t * t * t;
-    //     },
-    // },
   };
 
   function delay(ms) {
@@ -65,59 +62,192 @@ export default function Map() {
   const startTour = async () => {
     const mapboxMap = mapboxMapRef.current;
     const mapsIndoors = mapsIndoorsRef.current;
+    const directionsService = directionsServiceRef.current;
+    const directionsRenderer = directionsRendererRef.current;
 
     setIsButtonDisabled(true);
     setButtonDisabledAnimation(true);
 
-    for (const location of locationsList) {
-      mapboxMap.flyTo({
-        center: [
-          location.properties.anchor.coordinates[0],
-          location.properties.anchor.coordinates[1],
-        ],
-        zoom: zoomLevelMap[zoomLevel],
-        duration: 3500,
-        pitch: 45,
-        bearing: mapboxMap.getBearing() + 90,
-      });
+    if (withRoutes === false) {
+      for (const location of locationsList) {
+        mapboxMap.flyTo({
+          center: [
+            location.properties.anchor.coordinates[0],
+            location.properties.anchor.coordinates[1],
+          ],
+          zoom: zoomLevelMap[zoomLevel],
+          duration: 3500,
+          pitch: 45,
+          bearing: mapboxMap.getBearing() + 90,
+        });
 
-      mapsIndoors.overrideDisplayRule(location.id, {
-        wallsColor: highlightMap[highlight],
-        extrusionColor: highlightMap[highlight],
-        polygonVisible: true,
-        polygonFillColor: highlightMap[highlight],
-        polygonFillOpacity: 1,
-        polygonStrokeColor: highlightMap[highlight],
-        polygonStrokeOpacity: 1,
-      });
+        mapsIndoors.overrideDisplayRule(location.id, {
+          wallsColor: highlightMap[highlight],
+          extrusionColor: highlightMap[highlight],
+          polygonVisible: true,
+          polygonFillColor: highlightMap[highlight],
+          polygonFillOpacity: 1,
+          polygonStrokeColor: highlightMap[highlight],
+          polygonStrokeOpacity: 1,
+        });
 
-      const marker = new mapboxgl.Marker({
-        color: highlightMap[highlight],
-        anchor: "bottom",
-        offset: [0, -10],
-        pitchAlignment: "viewport",
-        rotationAlignment: "viewport",
-        scale: 1,
-        visible: true,
-      })
-        .setLngLat([
-          location.properties.anchor.coordinates[0],
-          location.properties.anchor.coordinates[1],
-        ])
-        .addTo(mapboxMap);
+        const marker = new mapboxgl.Marker({
+          color: highlightMap[highlight],
+          anchor: "bottom",
+          offset: [0, -10],
+          pitchAlignment: "viewport",
+          rotationAlignment: "viewport",
+          scale: 1,
+          visible: true,
+        })
+          .setLngLat([
+            location.properties.anchor.coordinates[0],
+            location.properties.anchor.coordinates[1],
+          ])
+          .addTo(mapboxMap);
 
-      toast(location.properties.name, {
-        duration: 4000,
-        className: "justify-center",
-      });
+        toast(location.properties.name, {
+          duration: 4000,
+          className: "justify-center",
+        });
 
-      await delay(4500);
+        await delay(4500);
 
-      mapsIndoors.revertDisplayRule(location.id);
-      marker.remove();
+        mapsIndoors.revertDisplayRule(location.id);
+        marker.remove();
+      }
+      setIsButtonDisabled(false);
+      setButtonDisabledAnimation(false);
+    } else if (withRoutes === true && locationsList.length > 1) {
+      let prevLocation = locationsList[0];
+
+      for (const location of locationsList) {
+        if (prevLocation !== location) {
+          mapboxMap.flyTo({
+            center: [
+              prevLocation.properties.anchor.coordinates[0],
+              prevLocation.properties.anchor.coordinates[1],
+            ],
+            zoom: zoomLevelMap[zoomLevel],
+            duration: 1500,
+            pitch: 45,
+            bearing: mapboxMap.getBearing() + 90,
+          });
+
+          mapsIndoors.overrideDisplayRule(prevLocation.id, {
+            wallsColor: highlightMap[highlight],
+            extrusionColor: highlightMap[highlight],
+            polygonVisible: true,
+            polygonFillColor: highlightMap[highlight],
+            polygonFillOpacity: 1,
+            polygonStrokeColor: highlightMap[highlight],
+            polygonStrokeOpacity: 1,
+          });
+
+          const marker = new mapboxgl.Marker({
+            color: highlightMap[highlight],
+            anchor: "bottom",
+            offset: [0, -10],
+            pitchAlignment: "viewport",
+            rotationAlignment: "viewport",
+            scale: 1,
+            visible: true,
+          })
+            .setLngLat([
+              prevLocation.properties.anchor.coordinates[0],
+              prevLocation.properties.anchor.coordinates[1],
+            ])
+            .addTo(mapboxMap);
+
+          toast(
+            prevLocation.properties.name + " → " + location.properties.name,
+            {
+              duration: 10000,
+              className: "justify-center",
+            }
+          );
+
+          await delay(2000);
+
+          //   mapsIndoors.revertDisplayRule(prevLocation.id);
+          //   marker.remove();
+
+          mapboxMap.flyTo({
+            center: [
+              location.properties.anchor.coordinates[0],
+              location.properties.anchor.coordinates[1],
+            ],
+            zoom: zoomLevelMap[zoomLevel],
+            duration: 1500,
+            pitch: 45,
+            bearing: mapboxMap.getBearing() + 90,
+          });
+
+          mapsIndoors.overrideDisplayRule(location.id, {
+            wallsColor: highlightMap[highlight],
+            extrusionColor: highlightMap[highlight],
+            polygonVisible: true,
+            polygonFillColor: highlightMap[highlight],
+            polygonFillOpacity: 1,
+            polygonStrokeColor: highlightMap[highlight],
+            polygonStrokeOpacity: 1,
+          });
+
+          const marker2 = new mapboxgl.Marker({
+            color: highlightMap[highlight],
+            anchor: "bottom",
+            offset: [0, -10],
+            pitchAlignment: "viewport",
+            rotationAlignment: "viewport",
+            scale: 1,
+            visible: true,
+          })
+            .setLngLat([
+              location.properties.anchor.coordinates[0],
+              location.properties.anchor.coordinates[1],
+            ])
+            .addTo(mapboxMap);
+
+          await delay(2000);
+
+          //   mapsIndoors.revertDisplayRule(location.id);
+          //   marker2.remove();
+
+          directionsService
+            .getRoute({
+              origin: {
+                lat: prevLocation.properties.anchor.coordinates[1],
+                lng: prevLocation.properties.anchor.coordinates[0],
+                floor: 50,
+              },
+              destination: {
+                lat: location.properties.anchor.coordinates[1],
+                lng: location.properties.anchor.coordinates[0],
+                floor: 50,
+              },
+            })
+            .then((directionsResult) => {
+              directionsRenderer.setOptions({
+                strokeColor: highlightMap[highlight],
+                strokeWeight: 6,
+              });
+              directionsRenderer.setRoute(directionsResult);
+            });
+
+          await delay(6500);
+
+          mapsIndoors.revertDisplayRule(prevLocation.id);
+          marker.remove();
+          mapsIndoors.revertDisplayRule(location.id);
+          marker2.remove();
+          directionsRenderer.setRoute(null);
+
+          prevLocation = location;
+        }
+      }
+      setIsButtonDisabled(false);
+      setButtonDisabledAnimation(false);
     }
-    setIsButtonDisabled(false);
-    setButtonDisabledAnimation(false);
   };
 
   useEffect(() => {
@@ -127,9 +257,26 @@ export default function Map() {
     const mapsIndoors = new mapsindoors.MapsIndoors({
       mapView: mapView,
     });
-    mapsIndoorsRef.current = mapsIndoors;
     const mapboxMap = mapsIndoors.getMap();
+
+    mapsIndoorsRef.current = mapsIndoors;
     mapboxMapRef.current = mapboxMap;
+
+    const externalDirectionsProvider =
+      new mapsindoors.directions.MapboxProvider(
+        "pk.eyJ1Ijoic21oZWFyZCIsImEiOiJjbG5hdmxhd3kwNjY3MmxtbGNqY3p1NWhxIn0.jY5n8pAE6DMd7li9oSP8fA"
+      );
+    const directionsService = new mapsindoors.services.DirectionsService(
+      externalDirectionsProvider
+    );
+    const directionsRenderer = new mapsindoors.directions.DirectionsRenderer({
+      mapsIndoors: mapsIndoors,
+      //   fitBounds: true,
+      //   animation: null,
+    });
+
+    directionsServiceRef.current = directionsService;
+    directionsRendererRef.current = directionsRenderer;
 
     mapsIndoors.on("ready", () => {
       mapsIndoors.setFloor("50");
@@ -202,7 +349,11 @@ export default function Map() {
 
       <Drawer.Root>
         <Drawer.Trigger asChild>
-          <Button size="icon" className="absolute z-50 top-5 right-32" disabled={buttonDisabledAnimation}>
+          <Button
+            size="icon"
+            className="absolute z-50 top-5 right-32"
+            disabled={buttonDisabledAnimation}
+          >
             <Settings />
           </Button>
         </Drawer.Trigger>
@@ -217,45 +368,57 @@ export default function Map() {
                 </Drawer.Title>
 
                 <div className="flex gap-2 justify-around">
-                    <div className="flex flex-col gap-2">
-                <Label htmlFor="zoomLevel">Zoom To</Label>
-                <Select
-                value={zoomLevel}
-                  onValueChange={(value) => {
-                    setZoomLevel(value);
-                  }}
-                >
-                  <SelectTrigger id="zoomLevel" className="w-[100px]">
-                    <SelectValue placeholder="Zoom To" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="far">Far</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="close">Close</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="route-mode">Route Mode</Label>
+                    <Switch
+                      id="route-mode"
+                      checked={withRoutes}
+                      onCheckedChange={(checked) => {
+                        setWithRoutes(checked);
+                      }}
+                    />
+                  </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
-                <Label htmlFor="highlight">Highlight</Label>
-                <Select
-                value={highlight}
-                  onValueChange={(value) => {
-                    setHighlight(value);
-                  }}
-                >
-                  <SelectTrigger id="highlight" className="w-[100px]">
-                    <SelectValue placeholder="Highlight" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="red">Red</SelectItem>
-                    <SelectItem value="green">Green</SelectItem>
-                    <SelectItem value="blue">Blue</SelectItem>
-                  </SelectContent>
-                </Select>
-                </div>
+                <div className="flex gap-2 justify-around">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="zoomLevel">Zoom To</Label>
+                    <Select
+                      value={zoomLevel}
+                      onValueChange={(value) => {
+                        setZoomLevel(value);
+                      }}
+                    >
+                      <SelectTrigger id="zoomLevel" className="w-[100px]">
+                        <SelectValue placeholder="Zoom To" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="far">Far</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="close">Close</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="highlight">Highlight</Label>
+                    <Select
+                      value={highlight}
+                      onValueChange={(value) => {
+                        setHighlight(value);
+                      }}
+                    >
+                      <SelectTrigger id="highlight" className="w-[100px]">
+                        <SelectValue placeholder="Highlight" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="red">Red</SelectItem>
+                        <SelectItem value="green">Green</SelectItem>
+                        <SelectItem value="blue">Blue</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
             </div>
           </Drawer.Content>
