@@ -186,9 +186,6 @@ export default function Map() {
 
           await delay(2000);
 
-          //   mapsIndoors.revertDisplayRule(prevLocation.id);
-          //   marker.remove();
-
           let routeBearing = calculateBearing(
             prevLocation.properties.anchor.coordinates[1],
             prevLocation.properties.anchor.coordinates[0],
