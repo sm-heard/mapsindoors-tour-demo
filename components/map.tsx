@@ -59,6 +59,15 @@ export default function Map() {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  function calculateBearing(startLat, startLng, endLat, endLng) {
+    var startY = Math.cos(endLat) * Math.sin(endLng - startLng);
+    var startX =
+      Math.cos(startLat) * Math.sin(endLat) -
+      Math.sin(startLat) * Math.cos(endLat) * Math.cos(endLng - startLng);
+    var bearing = (Math.atan2(startY, startX) * 180) / Math.PI;
+    return (bearing + 360) % 360;
+  }
+
   const startTour = async () => {
     const mapboxMap = mapboxMapRef.current;
     const mapsIndoors = mapsIndoorsRef.current;
@@ -116,6 +125,13 @@ export default function Map() {
         mapsIndoors.revertDisplayRule(location.id);
         marker.remove();
       }
+      mapboxMap.flyTo({
+        center: [-97.72107771405788, 30.405049053263483],
+        zoom: 20,
+        duration: 2000,
+        pitch: 25,
+        bearing: 59,
+      });
       setIsButtonDisabled(false);
       setButtonDisabledAnimation(false);
     } else if (withRoutes === true && locationsList.length > 1) {
@@ -164,6 +180,7 @@ export default function Map() {
             {
               duration: 10000,
               className: "justify-center",
+              position: "bottom-right",
             }
           );
 
@@ -171,6 +188,13 @@ export default function Map() {
 
           //   mapsIndoors.revertDisplayRule(prevLocation.id);
           //   marker.remove();
+
+          let routeBearing = calculateBearing(
+            prevLocation.properties.anchor.coordinates[1],
+            prevLocation.properties.anchor.coordinates[0],
+            location.properties.anchor.coordinates[1],
+            location.properties.anchor.coordinates[0]
+          );
 
           mapboxMap.flyTo({
             center: [
@@ -180,7 +204,8 @@ export default function Map() {
             zoom: zoomLevelMap[zoomLevel],
             duration: 1500,
             pitch: 45,
-            bearing: mapboxMap.getBearing() + 90,
+            // bearing: mapboxMap.getBearing() + 90,
+            bearing: routeBearing,
           });
 
           mapsIndoors.overrideDisplayRule(location.id, {
@@ -210,9 +235,6 @@ export default function Map() {
 
           await delay(2000);
 
-          //   mapsIndoors.revertDisplayRule(location.id);
-          //   marker2.remove();
-
           directionsService
             .getRoute({
               origin: {
@@ -229,7 +251,7 @@ export default function Map() {
             .then((directionsResult) => {
               directionsRenderer.setOptions({
                 strokeColor: highlightMap[highlight],
-                strokeWeight: 6,
+                strokeWeight: 4,
               });
               directionsRenderer.setRoute(directionsResult);
             });
@@ -245,6 +267,14 @@ export default function Map() {
           prevLocation = location;
         }
       }
+      mapboxMap.flyTo({
+        center: [-97.72107771405788, 30.405049053263483],
+        zoom: 20,
+        duration: 2000,
+        pitch: 25,
+        bearing: 59,
+      });
+
       setIsButtonDisabled(false);
       setButtonDisabledAnimation(false);
     }
@@ -271,7 +301,8 @@ export default function Map() {
     );
     const directionsRenderer = new mapsindoors.directions.DirectionsRenderer({
       mapsIndoors: mapsIndoors,
-      //   fitBounds: true,
+      fitBounds: true,
+      fitBoundsPadding: { top: 50, bottom: 50 },
       //   animation: null,
     });
 
