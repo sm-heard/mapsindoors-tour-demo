@@ -95,7 +95,7 @@ export default function Map() {
           extrusionColor: highlightMap[highlight],
           polygonVisible: true,
           polygonFillColor: highlightMap[highlight],
-          polygonFillOpacity: 1,
+          polygonFillOpacity: .5,
           polygonStrokeColor: highlightMap[highlight],
           polygonStrokeOpacity: 1,
         });
@@ -155,7 +155,7 @@ export default function Map() {
             extrusionColor: highlightMap[highlight],
             polygonVisible: true,
             polygonFillColor: highlightMap[highlight],
-            polygonFillOpacity: 1,
+            polygonFillOpacity: .5,
             polygonStrokeColor: highlightMap[highlight],
             polygonStrokeOpacity: 1,
           });
@@ -213,7 +213,7 @@ export default function Map() {
             extrusionColor: highlightMap[highlight],
             polygonVisible: true,
             polygonFillColor: highlightMap[highlight],
-            polygonFillOpacity: 1,
+            polygonFillOpacity: .5,
             polygonStrokeColor: highlightMap[highlight],
             polygonStrokeOpacity: 1,
           });
