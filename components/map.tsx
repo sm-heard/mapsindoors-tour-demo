@@ -274,6 +274,14 @@ export default function Map() {
 
       setIsButtonDisabled(false);
       setButtonDisabledAnimation(false);
+    } else {
+      toast.error("Please select at least 2 locations", {
+        duration: 3000,
+        className: "justify-center",
+      });
+
+      setIsButtonDisabled(false);
+      setButtonDisabledAnimation(false);
     }
   };
 
@@ -340,7 +348,7 @@ export default function Map() {
 
   return (
     <>
-      <Toaster position="bottom-center" visibleToasts={9} toastOptions={{}} />
+      <Toaster richColors position="bottom-center" visibleToasts={9} toastOptions={{}} />
 
       <Drawer.Root>
         <Drawer.Trigger asChild>
